@@ -1,18 +1,37 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
+import { useDeckContext } from "../provider/DeckBuild"; 
 import * as d3 from "d3";
+
 
 function ColorStats() {
     const svgRef =  useRef(null);
+    const { deck } = useDeckContext();
+
+    function generateData(deck){
+        const data0 = [
+            { color: 'W', count: 0 },
+                { color: 'B', count: 0 },
+                { color: 'R', count: 0 },
+                { color: 'G', count: 0 },        
+                { color:'U',count: 0},
+
+            ]
+            for (const [_, cards] of Object.entries(deck)){
+                for (const card of cards){
+                    if (card.colors){
+                        for (const color of card.colors){
+                            if (color)
+                                data0.find((el)=>el.color===color).count++;
+                        }
+                    }
+                    
+                }
+            }
+            return data0
+    }
+    
     useEffect(() => {
-        // TODO Data should not be here
-        const data = [
-            { color: 'White', count: 15 },
-            { color: 'Blue', count: 12 },
-            { color: 'Black', count: 8 },
-            { color: 'Red', count: 10 },
-            { color: 'Green', count: 18 },
-            { color: 'Colorless', count: 7 }
-        ];
+        const data = generateData(deck)
         const element = svgRef.current;
         element.innerHTML = '';
         const width = 200;
@@ -21,7 +40,7 @@ function ColorStats() {
 
         const color = d3.scaleOrdinal()
             .domain(data.map(d => d.color))
-            .range(['#F0E68C', '#4682B4', '#2F4F4F', '#B22222', '#228B22', '#A9A9A9']);
+            .range(['#A9A9A9', '#4682B4', '#FF0000', '#228B22', '#FFFF00', ]);
 
         const pie = d3.pie()
             .value(d => d.count)
@@ -52,7 +71,7 @@ function ColorStats() {
             .attr("d", arc)
             .attr("fill", d => color(d.data.color));
 
-    }, []);
+    }, [deck]);
     return <div id="colorStats" ref={svgRef}>
 
     </div>

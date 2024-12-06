@@ -1,21 +1,33 @@
 import {useEffect, useRef} from "react";
+import { useDeckContext } from "../provider/DeckBuild"; 
 import * as d3 from "d3";
 
 function ManaStats() {
     const svgRef =  useRef(null);
+    const { deck } = useDeckContext();
 
+    function generateData(){
+        const costMap = {};
+
+    Object.values(deck).forEach(cards => {
+        cards.forEach(card => {
+            if (Number.isInteger(card.cmc)) {
+                const cost = card.cmc < 7 ? card.cmc : '7+';
+                costMap[cost] = (costMap[cost] || 0) + 1;
+            }
+        });
+    }); 
+
+    const result = Object.keys(costMap).map(key => ({
+        cost: key,
+        count: costMap[key]
+    }));
+
+    return result;
+    }
     useEffect(() => {
-        // TODO Data should not be here
-        const data = [
-            { cost: 0, count: 2 },
-            { cost: 1, count: 8 },
-            { cost: 2, count: 12 },
-            { cost: 3, count: 15 },
-            { cost: 4, count: 10 },
-            { cost: 5, count: 6 },
-            { cost: 6, count: 4 },
-            { cost: '7+', count: 3 }
-        ];
+        const data = generateData(deck)
+
         const margin = { top: 30, right: 30, bottom: 70, left: 60 };
         const width = 460 - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
@@ -75,7 +87,7 @@ function ManaStats() {
             .attr("x", width / 2)
             .attr("y", height + margin.bottom - 10)
             .text("Mana Cost");
-    }, []);
+    }, [deck]);
 
     return <div id="manaStats" ref={svgRef}>
 
